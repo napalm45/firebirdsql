@@ -68,7 +68,7 @@ func (tx *firebirdsqlTx) begin() (err error) {
 		tpb = []byte{
 			byte(isc_tpb_version3),
 			byte(isc_tpb_read),
-			byte(isc_tpb_wait),
+			byte(isc_tpb_nowait),
 			byte(isc_tpb_read_committed),
 			byte(isc_tpb_rec_version),
 		}
