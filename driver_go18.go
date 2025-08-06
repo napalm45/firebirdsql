@@ -55,20 +55,20 @@ func (stmt *firebirdsqlStmt) QueryContext(ctx context.Context, namedargs []drive
 	return stmt.query(ctx, args)
 }
 
-func (fc *firebirdsqlConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
+func (fc *firebirdsqlConn) BeginTx(ctx context.Context, opts driver.TxOptions, wait bool) (driver.Tx, error) {
 	if opts.ReadOnly {
-		return fc.begin(ISOLATION_LEVEL_READ_COMMITED_RO)
+		return fc.begin(ISOLATION_LEVEL_READ_COMMITED_RO, false)
 	}
 
 	switch (sql.IsolationLevel)(opts.Isolation) {
 	case sql.LevelDefault:
-		return fc.begin(ISOLATION_LEVEL_READ_COMMITED)
+		return fc.begin(ISOLATION_LEVEL_READ_COMMITED, wait)
 	case sql.LevelReadCommitted:
-		return fc.begin(ISOLATION_LEVEL_READ_COMMITED)
+		return fc.begin(ISOLATION_LEVEL_READ_COMMITED, wait)
 	case sql.LevelRepeatableRead:
-		return fc.begin(ISOLATION_LEVEL_REPEATABLE_READ)
+		return fc.begin(ISOLATION_LEVEL_REPEATABLE_READ, wait)
 	case sql.LevelSerializable:
-		return fc.begin(ISOLATION_LEVEL_SERIALIZABLE)
+		return fc.begin(ISOLATION_LEVEL_SERIALIZABLE, wait)
 	default:
 	}
 	return nil, errors.New("This isolation level is not supported.")

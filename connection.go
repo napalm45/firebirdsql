@@ -42,8 +42,9 @@ type firebirdsqlConn struct {
 
 // ============ driver.Conn implementation
 
-func (fc *firebirdsqlConn) begin(isolationLevel int) (driver.Tx, error) {
+func (fc *firebirdsqlConn) begin(isolationLevel int, wait bool) (driver.Tx, error) {
 	tx, err := newFirebirdsqlTx(fc, isolationLevel, false, true)
+	tx.wait = wait
 	fc.tx = tx
 	return driver.Tx(tx), err
 }
@@ -53,7 +54,7 @@ func (fc *firebirdsqlConn) begin(isolationLevel int) (driver.Tx, error) {
 // Deprecated: Drivers should implement ConnBeginTx instead (or additionally).
 // -> is implemented in driver_go18.go with BeginTx()
 func (fc *firebirdsqlConn) Begin() (driver.Tx, error) {
-	return fc.begin(ISOLATION_LEVEL_READ_COMMITED)
+	return fc.begin(ISOLATION_LEVEL_READ_COMMITED, false)
 }
 
 // Close invalidates and potentially stops any current

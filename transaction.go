@@ -29,16 +29,21 @@ type firebirdsqlTx struct {
 	isAutocommit   bool
 	transHandle    int32
 	needBegin      bool
+	wait           bool
 }
 
 func (tx *firebirdsqlTx) begin() (err error) {
 	var tpb []byte
+	_tpb_wait := isc_tpb_nowait
+	if tx.wait {
+		_tpb_wait = isc_tpb_wait
+	}
 	switch tx.isolationLevel {
 	case ISOLATION_LEVEL_READ_COMMITED_LEGACY:
 		tpb = []byte{
 			byte(isc_tpb_version3),
 			byte(isc_tpb_write),
-			byte(isc_tpb_wait),
+			byte(_tpb_wait),
 			byte(isc_tpb_read_committed),
 			byte(isc_tpb_no_rec_version),
 		}
@@ -46,7 +51,7 @@ func (tx *firebirdsqlTx) begin() (err error) {
 		tpb = []byte{
 			byte(isc_tpb_version3),
 			byte(isc_tpb_write),
-			byte(isc_tpb_nowait),
+			byte(_tpb_wait),
 			byte(isc_tpb_read_committed),
 			byte(isc_tpb_rec_version),
 		}
@@ -54,21 +59,21 @@ func (tx *firebirdsqlTx) begin() (err error) {
 		tpb = []byte{
 			byte(isc_tpb_version3),
 			byte(isc_tpb_write),
-			byte(isc_tpb_wait),
+			byte(_tpb_wait),
 			byte(isc_tpb_concurrency),
 		}
 	case ISOLATION_LEVEL_SERIALIZABLE:
 		tpb = []byte{
 			byte(isc_tpb_version3),
 			byte(isc_tpb_write),
-			byte(isc_tpb_wait),
+			byte(_tpb_wait),
 			byte(isc_tpb_consistency),
 		}
 	case ISOLATION_LEVEL_READ_COMMITED_RO:
 		tpb = []byte{
 			byte(isc_tpb_version3),
 			byte(isc_tpb_read),
-			byte(isc_tpb_nowait),
+			byte(_tpb_wait),
 			byte(isc_tpb_read_committed),
 			byte(isc_tpb_rec_version),
 		}
